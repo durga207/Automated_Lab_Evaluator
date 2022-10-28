@@ -3,6 +3,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/wait.h>
+#include<errno.h>
+
 using namespace std;
 
 #define maxNumberOfTestCases 100
@@ -49,17 +57,36 @@ void handler(int sig){
 
 int executeCode(const char runCommand[])
 {
-	pid = fork();
-	int ret=-1;
-	if(pid==0)
-	{
-		ret = system(runCommand);
-		//wait(NULL);
-		//exit(0);
-	}
-	else
-	{
-		signal(SIGCHLD,handler);
+
+
+int fd[2];
+  if (pipe(fd) == -1) {
+    printf("\nError on opening pipe\n");
+    return 5;
+  }
+  int pid = fork();
+  if (pid == -1) {
+    printf("\nError in forking\n");
+    return 5;
+  }
+  if (pid == 0) {
+    close(fd[0]);
+    int ret=-1;
+    ret = system(runCommand);
+    if (write(fd[1], &ret, sizeof(int)) == -1) {
+      printf("\nError in writing\n");
+      return 5;
+    }
+    close(fd[1]);
+  }
+  else {
+    close(fd[1]);
+    int ret=-1;
+    if (read(fd[0], &ret, sizeof(int)) == -1) {
+      printf("\nError in reading\n");
+      return 5;
+    }
+    signal(SIGCHLD,handler);
 		usleep(MAXTIME);
 
 		if(kill(pid,0)==0){
@@ -71,8 +98,34 @@ int executeCode(const char runCommand[])
 				return 3;
 			return 0;
 		}
-	}
+    close(fd[0]);
+  }
 
+
+//	pid = fork();
+//	int ret=-1;
+//	if(pid==0)
+//	{
+//		ret = system(runCommand);
+//		//wait(NULL);
+//		//exit(0);
+//	}
+//	else
+//	{
+//		signal(SIGCHLD,handler);
+//		usleep(MAXTIME);
+//
+//		if(kill(pid,0)==0){
+//			kill(pid,SIGKILL);
+//			return 2;
+//		}
+//		else{
+//			if(ret != 0)
+//				return 3;
+//			return 0;
+//		}
+//	}
+//
 	return 0;
 }
 
