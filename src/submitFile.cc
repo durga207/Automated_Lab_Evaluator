@@ -125,7 +125,7 @@ int fd[2];
 //			return 0;
 //		}
 //	}
-//
+
 	return 0;
 }
 
@@ -258,10 +258,11 @@ void submit(Teacher teacher, Student student)
 			fflush(stdout);
 		}
 		printf("\n");
-
 		int codeResult = executeCode(runCommand);
-		if(pid == 0)
+		if(pid == 0) {
+            printf("---");
 			exit(0);
+		}
 		if(codeResult == 3){
 			printf("Runtime Error\n\n");
 			results[i] = 3;
@@ -269,7 +270,8 @@ void submit(Teacher teacher, Student student)
 			continue;
 		}
 		else if(codeResult == 2){
-			printf("Time Limit Exceeded\n\n");
+
+			printf("Time Limit Exceeded %d\n\n", pid);
 			results[i] = 2;
 			finalResult = max(finalResult, results[i]);
 			continue;
@@ -286,7 +288,7 @@ void submit(Teacher teacher, Student student)
 		}
 		else{
 			results[i] = 0;
-			printf("Correct Answer\n\n");
+			printf("Correct Answer %d\n\n", pid);
 			score++;
 		}
 
@@ -322,8 +324,9 @@ void submit(Teacher teacher, Student student)
 	cout<<"Result : "<<resultString<<endl;
 	printf("Score : %d / 100\n", score);
 	printf("\n\nHit Enter to continue");
+	pid = 0;
 	getchar();
 	getchar();
 
-	
+
 }
